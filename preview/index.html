@@ -329,12 +329,12 @@
   </div>
 
   <script type="module">
-    import { getSession, logout, requireAuth } from './js/auth.js';
+    import { LOGIN_PATH, logout, requireAuth } from './js/auth.js';
 
-    const session = requireAuth('./login.html');
+    const session = requireAuth(LOGIN_PATH);
     if (!session) throw new Error('unauthorized');
 
-    document.getElementById('logout-btn').addEventListener('click', () => logout('./login.html'));
+    document.getElementById('logout-btn').addEventListener('click', () => logout(LOGIN_PATH));
   </script>
   <script>
     function fmt(n) {

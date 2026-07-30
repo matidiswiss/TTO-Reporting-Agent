@@ -2,6 +2,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-config.js';
 
 const SESSION_KEY = 'tto_session';
+export const LOGIN_PATH = '/login';
+export const DASHBOARD_PATH = '/dashboard';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -22,7 +24,7 @@ export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
-export function requireAuth(loginPath = './login.html') {
+export function requireAuth(loginPath = LOGIN_PATH) {
   const session = getSession();
   if (!session?.ok) {
     window.location.replace(loginPath);
@@ -51,7 +53,7 @@ export async function login(username, password) {
   return data;
 }
 
-export function logout(loginPath = './login.html') {
+export function logout(loginPath = LOGIN_PATH) {
   clearSession();
   window.location.replace(loginPath);
 }
