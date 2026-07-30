@@ -18,4 +18,6 @@ if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   exit 1
 fi
 
-exec git -c "http.extraHeader=Authorization: Bearer ${GITHUB_TOKEN}" "$@"
+exec git \
+  -c "credential.helper=!f() { echo \"username=x-access-token\"; echo \"password=${GITHUB_TOKEN}\"; }; f" \
+  "$@"
