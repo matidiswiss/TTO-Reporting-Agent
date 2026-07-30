@@ -5,6 +5,7 @@
     { "source": "/login.html", "destination": "/preview/login.html" },
     { "source": "/dashboard", "destination": "/preview/index.html" },
     { "source": "/index.html", "destination": "/preview/index.html" },
-    { "source": "/data.json", "destination": "/preview/data.json" }
+    { "source": "/data.json", "destination": "/preview/data.json" },
+    { "source": "/js/(.*)", "destination": "/preview/js/$1" }
   ]
 }

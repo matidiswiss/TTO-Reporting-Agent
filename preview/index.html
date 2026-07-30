@@ -329,7 +329,7 @@
   </div>
 
   <script type="module">
-    import { LOGIN_PATH, logout, requireAuth } from './js/auth.js';
+    import { LOGIN_PATH, logout, requireAuth } from '/preview/js/auth.js';
 
     const session = requireAuth(LOGIN_PATH);
     if (!session) throw new Error('unauthorized');
@@ -404,7 +404,7 @@
     }
 
     async function init() {
-      const res = await fetch('./data.json');
+      const res = await fetch('/data.json');
       const data = await res.json();
       const c = data.campaign;
       const m = data.meta;
