@@ -35,7 +35,27 @@
 
     header {
       margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
     }
+
+    .header-main { flex: 1; }
+
+    .logout-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover { color: var(--text); border-color: var(--accent); }
 
     header h1 {
       font-size: 28px;
@@ -229,9 +249,12 @@
 <body>
   <div class="container">
     <header>
-      <div class="badge">TTO Reporting Agent</div>
-      <h1 id="title">Betadine Wound — TTO Report & Learning</h1>
-      <p id="subtitle">Loading campaign data...</p>
+      <div class="header-main">
+        <div class="badge">TTO Reporting Agent</div>
+        <h1 id="title">Betadine Wound — TTO Report & Learning</h1>
+        <p id="subtitle">Loading campaign data...</p>
+      </div>
+      <button type="button" class="logout-btn" id="logout-btn">Keluar</button>
     </header>
 
     <section class="section grid grid-4" id="kpis"></section>
@@ -305,6 +328,14 @@
     <p class="footnote" id="footnote"></p>
   </div>
 
+  <script type="module">
+    import { getSession, logout, requireAuth } from './js/auth.js';
+
+    const session = requireAuth('./login.html');
+    if (!session) throw new Error('unauthorized');
+
+    document.getElementById('logout-btn').addEventListener('click', () => logout('./login.html'));
+  </script>
   <script>
     function fmt(n) {
       if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M';
