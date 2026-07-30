@@ -1,0 +1,15 @@
+---
+description: Auto commit and push completed changes to main
+alwaysApply: true
+---
+
+# Auto Commit & Push to Main
+
+After completing any code changes in this project:
+
+1. Run `git status` and include all relevant changed files.
+2. Commit with a clear, concise message focused on why.
+3. Push to `origin/main` immediately without waiting for the user to ask.
+4. Never commit secrets (`.env`, tokens, credentials).
+
+Skip only when the user explicitly says not to commit, or when there are no changes.

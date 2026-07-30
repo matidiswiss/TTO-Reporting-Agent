@@ -7,5 +7,13 @@
     { "source": "/index.html", "destination": "/preview/index.html" },
     { "source": "/data.json", "destination": "/preview/data.json" },
     { "source": "/js/(.*)", "destination": "/preview/js/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
+      ]
+    }
   ]
 }

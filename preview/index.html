@@ -329,7 +329,7 @@
   </div>
 
   <script type="module">
-    import { LOGIN_PATH, logout, requireAuth } from '/preview/js/auth.js';
+    import { LOGIN_PATH, logout, requireAuth } from '/preview/js/auth.js?v=3';
 
     const session = requireAuth(LOGIN_PATH);
     if (!session) throw new Error('unauthorized');

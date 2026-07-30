@@ -135,7 +135,7 @@
   </main>
 
   <script type="module">
-    import { DASHBOARD_PATH, getSession, login } from '/preview/js/auth.js';
+    import { DASHBOARD_PATH, getSession, login } from '/preview/js/auth.js?v=3';
 
     if (getSession()?.ok) {
       window.location.replace(DASHBOARD_PATH);
