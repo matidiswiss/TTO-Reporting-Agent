@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTO Reporting Agent — Betadine Wound</title>
+  <style>
+    :root {
+      --bg: #f7f8f6;
+      --surface: #ffffff;
+      --text: #1a1f1c;
+      --muted: #5f6b64;
+      --accent: #158158;
+      --accent-soft: #e8f3ed;
+      --border: #dde5df;
+      --paid: #2563eb;
+      --organic: #158158;
+      --warning: #b45309;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    header {
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--muted);
+      max-width: 720px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+    @media (max-width: 900px) {
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .split-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0 8px;
+    }
+
+    .split-paid { background: var(--paid); }
+    .split-organic { background: var(--organic); }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .legend .paid::before { background: var(--paid); }
+    .legend .organic::before { background: var(--organic); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .creator-name { font-weight: 600; }
+
+    .chart-wrap {
+      height: 220px;
+      position: relative;
+    }
+
+    canvas { width: 100% !important; height: 100% !important; }
+
+    .insights {
+      display: grid;
+      gap: 12px;
+    }
+
+    .insight {
+      padding: 14px 16px;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+      font-size: 14px;
+    }
+
+    .insight strong { display: block; margin-bottom: 4px; }
+
+    .insight.warn {
+      border-left-color: var(--warning);
+      background: #fef7ed;
+    }
+
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .section { margin-bottom: 24px; }
+
+    .footnote {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">TTO Reporting Agent</div>
+      <h1 id="title">Betadine Wound — TTO Report & Learning</h1>
+      <p id="subtitle">Loading campaign data...</p>
+    </header>
+
+    <section class="section grid grid-4" id="kpis"></section>
+
+    <section class="section grid grid-2">
+      <div class="card">
+        <h2>Distribusi Views</h2>
+        <div class="split-bar" id="splitBar"></div>
+        <div class="legend">
+          <span class="paid" id="paidLegend">Paid</span>
+          <span class="organic" id="organicLegend">Organic</span>
+        </div>
+        <div style="margin-top: 20px;" class="grid grid-2">
+          <div>
+            <div class="metric" style="font-size: 22px;" id="engRate">—</div>
+            <div class="metric-label">Engagement Rate</div>
+          </div>
+          <div>
+            <div class="metric" style="font-size: 22px;" id="cpm">—</div>
+            <div class="metric-label">CPM</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>View Trend (Daily)</h2>
+        <div class="chart-wrap">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="section grid grid-2">
+      <div class="card">
+        <h2>Creator Performance</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Creator</th>
+              <th>Videos</th>
+              <th>Views</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody id="creatorTable"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Key Insights</h2>
+        <div class="insights" id="insights"></div>
+      </div>
+    </section>
+
+    <section class="section card">
+      <h2>Deliverables</h2>
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">
+        PowerPoint decks generated from TikTok One export data.
+      </p>
+      <div class="downloads">
+        <a class="btn btn-primary" href="/output/FOLO - Report TTO Betadine Wound (Jun 2026).pptx" download>
+          Download Wound Deck (16 slides)
+        </a>
+        <a class="btn" href="/output/FOLO - Report TTO Betadine Antiseptic Solution (Jun 2026).pptx" download>
+          Download Solution Deck (7 slides)
+        </a>
+        <a class="btn" href="/exports/TIKTOK ONE REPORT - Betadine Antiseptic Solution (OLV - Online Video).xlsx" download>
+          Download Source Excel
+        </a>
+      </div>
+    </section>
+
+    <p class="footnote" id="footnote"></p>
+  </div>
+
+  <script>
+    function fmt(n) {
+      if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M';
+      if (n >= 1_000) return (n / 1_000).toFixed(1).replace('.0', '') + 'K';
+      return Number(n).toLocaleString('id-ID');
+    }
+
+    function pct(part, total) {
+      return total ? Math.round(part / total * 100) : 0;
+    }
+
+    function drawChart(history) {
+      const canvas = document.getElementById('trendChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const pad = { t: 12, r: 12, b: 28, l: 44 };
+      const max = Math.max(...history.map(d => d['Total views']));
+      const points = history.map((d, i) => ({
+        x: pad.l + (i / Math.max(history.length - 1, 1)) * (w - pad.l - pad.r),
+        y: pad.t + (1 - d['Total views'] / max) * (h - pad.t - pad.b),
+        v: d['Total views'],
+        date: d.Date.slice(5)
+      }));
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#dde5df';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.t + (i / 4) * (h - pad.t - pad.b);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillStyle = '#5f6b64';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(fmt(max * (1 - i / 4)), pad.l - 8, y + 4);
+      }
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#158158';
+      ctx.lineWidth = 2;
+      points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.stroke();
+
+      ctx.fillStyle = '#158158';
+      points.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#5f6b64';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      [0, Math.floor(points.length / 2), points.length - 1].forEach(i => {
+        if (points[i]) ctx.fillText(points[i].date, points[i].x, h - 8);
+      });
+    }
+
+    async function init() {
+      const res = await fetch('./data.json');
+      const data = await res.json();
+      const c = data.campaign;
+      const m = data.meta;
+      const views = c['Total views'];
+      const paid = c['Paid views'];
+      const organic = c['Organic views'];
+
+      document.getElementById('subtitle').textContent =
+        `${m.brand} · ${m.n_creators} creators · ${m.n_videos} videos · ${m.period} · Source: ${m.source}`;
+
+      document.getElementById('kpis').innerHTML = `
+        <div class="card"><div class="metric">${fmt(views)}</div><div class="metric-label">Total Views</div></div>
+        <div class="card"><div class="metric">${fmt(c['Unique viewers'])}</div><div class="metric-label">Unique Viewers</div></div>
+        <div class="card"><div class="metric">${(c['Engagement rate'] * 100).toFixed(2)}%</div><div class="metric-label">Engagement Rate</div></div>
+        <div class="card"><div class="metric">$${c['CPM'].toFixed(2)}</div><div class="metric-label">CPM</div></div>
+      `;
+
+      const paidPct = pct(paid, views);
+      document.getElementById('splitBar').innerHTML =
+        `<div class="split-paid" style="width:${paidPct}%"></div><div class="split-organic" style="width:${100-paidPct}%"></div>`;
+      document.getElementById('paidLegend').textContent = `Paid ${fmt(paid)} (${paidPct}%)`;
+      document.getElementById('organicLegend').textContent = `Organic ${fmt(organic)} (${100 - paidPct}%)`;
+      document.getElementById('engRate').textContent = (c['Engagement rate'] * 100).toFixed(2) + '%';
+      document.getElementById('cpm').textContent = '$' + c['CPM'].toFixed(2);
+
+      const totalCreatorViews = data.creators.reduce((s, x) => s + x.total_views, 0);
+      document.getElementById('creatorTable').innerHTML = data.creators.map(cr => `
+        <tr>
+          <td class="creator-name">@${cr['Creator name']}</td>
+          <td>${cr.videos}</td>
+          <td>${fmt(cr.total_views)}</td>
+          <td>${pct(cr.total_views, totalCreatorViews)}%</td>
+        </tr>
+      `).join('');
+
+      const top = data.creators[0];
+      document.getElementById('insights').innerHTML = `
+        <div class="insight"><strong>Paid amplification drives scale</strong>${paidPct}% views dari paid media dengan CPM $${c['CPM'].toFixed(2)} — efisiensi biaya tinggi.</div>
+        <div class="insight"><strong>Creator concentration</strong>@${top['Creator name']} kontribusi ${pct(top.total_views, totalCreatorViews)}% total views — diversifikasi perlu dipertimbangkan.</div>
+        <div class="insight warn"><strong>Organic engagement lemah</strong>Organic ER ${(c['Organic engagement rate'] * 100).toFixed(2)}% vs paid ${(c['Paid engagement rate'] * 100).toFixed(2)}% — ruang growth organik masih besar.</div>
+        <div class="insight warn"><strong>Retention drop setelah hook</strong>${(c['2-Second video views'] * 100).toFixed(0)}% pass 2-detik → ${(c['6-Second video views'] * 100).toFixed(0)}% di 6-detik — storytelling perlu diperkuat.</div>
+      `;
+
+      drawChart(data.history);
+      window.addEventListener('resize', () => drawChart(data.history));
+
+      document.getElementById('footnote').textContent =
+        `Data dari TikTok One export · Updated ${c['Report updated date']} · Campaign ID ${c['Campaign or link ID']}`;
+    }
+
+    init();
+  </script>
+</body>
+</html>

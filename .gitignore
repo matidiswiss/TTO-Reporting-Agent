@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# Large local assets — keep on disk, not in git
+references/
+output/
+assets/
