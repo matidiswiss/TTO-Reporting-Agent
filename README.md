@@ -43,3 +43,5 @@ chmod +x scripts/upload-deliverables.sh
 - `exports/` — TikTok One Excel exports (source data)
 - `output/` — Generated PowerPoint decks (local only)
 - `references/` — Reference deck templates (local only)
+
+See **[ROADMAP.md](./ROADMAP.md)** for phased plan, status, and handoff notes for new agents.
