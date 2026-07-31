@@ -256,6 +256,125 @@
     }
 
     .error-banner[hidden] { display: none; }
+
+    .product-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .product-tab {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .product-tab:hover { border-color: var(--accent); color: var(--text); }
+
+    .product-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .product-panel[hidden] { display: none; }
+
+    .product-placeholder {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .product-placeholder h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .product-placeholder p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .spotlight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .spotlight-grid { grid-template-columns: 1fr; }
+    }
+
+    .spotlight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .spotlight-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .spotlight-metric {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+    }
+
+    .spotlight-creator {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .spotlight-link {
+      font-size: 13px;
+      color: var(--accent);
+      text-decoration: none;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .spotlight-link:hover { text-decoration: underline; }
+
+    .spotlight-empty {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .audience-chart-wrap {
+      height: 240px;
+      position: relative;
+    }
+
+    .audience-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .audience-error {
+      font-size: 14px;
+      color: var(--warning);
+      padding: 16px 0;
+    }
   </style>
 </head>
 <body>
@@ -271,7 +390,21 @@
 
     <div id="error-banner" class="error-banner" role="alert" hidden></div>
 
+    <nav class="product-tabs" id="product-tabs" aria-label="Product sections">
+      <button type="button" class="product-tab active" data-product="solution">Solution</button>
+      <button type="button" class="product-tab" data-product="ointment">Ointment</button>
+      <button type="button" class="product-tab" data-product="bening">Bening</button>
+    </nav>
+
+    <div id="panel-solution" class="product-panel" data-product="solution">
     <section class="section grid grid-4" id="kpis"></section>
+
+    <section class="section">
+      <div class="card" style="margin-bottom: 0;">
+        <h2>Content Video Spotlight</h2>
+        <div class="spotlight-grid" id="video-spotlight"></div>
+      </div>
+    </section>
 
     <section class="section grid grid-2">
       <div class="card">
@@ -297,6 +430,23 @@
         <div class="chart-wrap">
           <canvas id="trendChart"></canvas>
         </div>
+      </div>
+    </section>
+
+    <section class="section grid grid-2">
+      <div class="card">
+        <h2>Audience — Age</h2>
+        <div class="audience-chart-wrap">
+          <canvas id="ageChart"></canvas>
+        </div>
+        <p class="audience-note" id="ageChartNote"></p>
+      </div>
+      <div class="card">
+        <h2>Audience — Gender</h2>
+        <div class="audience-chart-wrap">
+          <canvas id="genderChart"></canvas>
+        </div>
+        <p class="audience-note" id="genderChartNote"></p>
       </div>
     </section>
 
@@ -330,11 +480,34 @@
     </section>
 
     <p class="footnote" id="footnote"></p>
+    </div>
+
+    <div id="panel-ointment" class="product-panel" data-product="ointment" hidden>
+      <section class="section card product-placeholder">
+        <h3>Ointment — Data Terkonsolidasi</h3>
+        <p>
+          Export Excel terpisah untuk Ointment belum tersedia. Metrik di tab Solution
+          berasal dari laporan konsolidasi Wound (satu file TikTok One) dan mencerminkan
+          seluruh portfolio, bukan angka khusus Ointment.
+        </p>
+      </section>
+    </div>
+
+    <div id="panel-bening" class="product-panel" data-product="bening" hidden>
+      <section class="section card product-placeholder">
+        <h3>Bening — Data Terkonsolidasi</h3>
+        <p>
+          Export Excel terpisah untuk Bening belum tersedia. Metrik di tab Solution
+          berasal dari laporan konsolidasi Wound (satu file TikTok One) dan mencerminkan
+          seluruh portfolio, bukan angka khusus Bening.
+        </p>
+      </section>
+    </div>
   </div>
 
   <script type="module">
     import { LOGIN_PATH, logout, requireAuth } from '/preview/js/auth.js?v=4';
-    import { initDashboard } from '/preview/js/dashboard.js?v=4';
+    import { initDashboard } from '/preview/js/dashboard.js?v=5';
 
     const session = requireAuth(LOGIN_PATH);
     if (!session) throw new Error('unauthorized');

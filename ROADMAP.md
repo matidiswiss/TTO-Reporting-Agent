@@ -155,14 +155,16 @@ Re-upload script: `scripts/upload-deliverables.sh` (needs `.env` with `SUPABASE_
    - Trigger regenerate flow or upload pre-built `data.json`
 
 2. **Content Video spotlight**
-   - Use `top_videos` in `data.json`
-   - Best Overall / Most Shared / Best Retention cards + TikTok video links from Excel
+   - [x] Use `top_videos` in `data.json`
+   - [x] Best Overall / Most Shared / Best Retention cards + TikTok video links from Excel
 
 3. **Audience charts**
-   - Parse `Age distribution`, `Gender distribution`, `Countries or regions distribution` from campaign object (JSON strings today)
+   - [x] Parse `Age distribution`, `Gender distribution`, `Countries or regions distribution` from campaign object (JSON strings today)
+   - [x] Age + gender bar charts on dashboard (canvas)
 
 4. **Product sections**
-   - Tabs or sections: Solution / Ointment / Bening
+   - [x] Tabs or sections: Solution / Ointment / Bening
+   - [x] Clear UX when only consolidated Wound export exists (Ointment/Bening placeholder tabs)
    - Requires separate Excel exports per product when available (today: single export stands for whole Wound line)
 
 5. **Multi-campaign**
@@ -176,9 +178,9 @@ Re-upload script: `scripts/upload-deliverables.sh` (needs `.env` with `SUPABASE_
 ### Phase 3 acceptance criteria
 
 - [ ] User can upload a new Excel and see updated dashboard without git commit
-- [ ] Spotlight videos visible with links
-- [ ] At least one audience breakdown chart on dashboard
-- [ ] Clear UX when only consolidated Wound data is available
+- [x] Spotlight videos visible with links
+- [x] At least one audience breakdown chart on dashboard
+- [x] Clear UX when only consolidated Wound data is available
 
 ---
 

@@ -10,6 +10,30 @@ function pct(part, total) {
   return total ? Math.round(part / total * 100) : 0;
 }
 
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function parseDistribution(jsonStr, labelKey) {
+  try {
+    if (!jsonStr) return [];
+    const parsed = JSON.parse(String(jsonStr).trim());
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => ({
+        label: String(item[labelKey] ?? '—'),
+        pct: (item.percentage ?? 0) * 100,
+      }))
+      .sort((a, b) => b.pct - a.pct);
+  } catch {
+    return null;
+  }
+}
+
 function formatReportDate(raw) {
   const s = String(raw ?? '');
   if (/^\d{8}$/.test(s)) {
@@ -56,6 +80,161 @@ function renderDeliverables() {
     const cls = item.primary ? 'btn btn-primary' : 'btn';
     return `<a class="${cls}" href="${item.url}" download="${item.filename}">${item.label}</a>`;
   }).join('');
+}
+
+function initProductTabs() {
+  const tabs = document.querySelectorAll('.product-tab');
+  const panels = document.querySelectorAll('.product-panel');
+  if (!tabs.length) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const product = tab.dataset.product;
+      tabs.forEach((t) => t.classList.toggle('active', t === tab));
+      panels.forEach((p) => {
+        p.hidden = p.dataset.product !== product;
+      });
+    });
+  });
+}
+
+function pickVideo(videos, compare) {
+  if (!videos?.length) return null;
+  return videos.reduce((best, v) => (compare(v, best) ? v : best), null);
+}
+
+function renderVideoSpotlight(videos) {
+  const container = document.getElementById('video-spotlight');
+  if (!container) return;
+
+  if (!videos?.length) {
+    container.innerHTML = '<p class="spotlight-empty">Tidak ada data video.</p>';
+    return;
+  }
+
+  const bestOverall = pickVideo(videos, (v, b) => v['Total views'] > b['Total views']);
+  const mostShared = pickVideo(videos, (v, b) => v['Shares'] > b['Shares']);
+  const retentionPool = videos.filter((v) => v['Total views'] >= 5000);
+  const bestRetention = retentionPool.length
+    ? pickVideo(retentionPool, (v, b) => v['Video completion rate'] > b['Video completion rate'])
+    : null;
+
+  const cards = [
+    {
+      label: 'Best Overall',
+      video: bestOverall,
+      metric: bestOverall ? fmt(bestOverall['Total views']) : '—',
+      sub: 'Total views',
+    },
+    {
+      label: 'Most Shared',
+      video: mostShared,
+      metric: mostShared ? fmt(mostShared['Shares']) : '—',
+      sub: 'Shares',
+    },
+    {
+      label: 'Best Retention',
+      video: bestRetention,
+      metric: bestRetention
+        ? (bestRetention['Video completion rate'] * 100).toFixed(2) + '%'
+        : '—',
+      sub: retentionPool.length ? 'Completion rate (≥5K views)' : 'Tidak ada video ≥5K views',
+    },
+  ];
+
+  container.innerHTML = cards
+    .map(({ label, video, metric, sub }) => {
+      if (!video) {
+        return `
+          <div class="spotlight-card">
+            <div class="spotlight-label">${label}</div>
+            <div class="spotlight-empty">Data tidak tersedia</div>
+          </div>`;
+      }
+      const url = escapeHtml(video['Video URL'] || '#');
+      const creator = escapeHtml(video['Creator name']);
+      return `
+        <div class="spotlight-card">
+          <div class="spotlight-label">${label}</div>
+          <div class="spotlight-metric">${metric}</div>
+          <div class="spotlight-creator">@${creator}</div>
+          <div class="metric-label">${sub}</div>
+          <a class="spotlight-link" href="${url}" target="_blank" rel="noopener noreferrer">Buka video di TikTok ↗</a>
+        </div>`;
+    })
+    .join('');
+}
+
+function drawHorizontalBarChart(canvasId, noteId, items, { barColor = '#158158' } = {}) {
+  const canvas = document.getElementById(canvasId);
+  const noteEl = noteId ? document.getElementById(noteId) : null;
+  if (!canvas) return false;
+
+  if (items === null) {
+    if (noteEl) noteEl.textContent = 'Tidak bisa memuat distribusi audiens — format data tidak valid.';
+    return false;
+  }
+  if (!items.length) {
+    if (noteEl) noteEl.textContent = 'Data distribusi audiens tidak tersedia.';
+    return false;
+  }
+
+  if (noteEl) noteEl.textContent = 'Berdasarkan campaign-level audience dari TikTok One export.';
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+  const pad = { t: 8, r: 48, b: 8, l: 72 };
+  const rowH = Math.min(28, (h - pad.t - pad.b) / items.length);
+  const chartH = rowH * items.length;
+  const startY = pad.t + (h - pad.t - pad.b - chartH) / 2;
+  const maxPct = Math.max(...items.map((d) => d.pct), 1);
+  const barMaxW = w - pad.l - pad.r;
+
+  ctx.clearRect(0, 0, w, h);
+
+  items.forEach((item, i) => {
+    const y = startY + i * rowH + rowH * 0.15;
+    const barH = rowH * 0.7;
+    const barW = (item.pct / maxPct) * barMaxW;
+
+    ctx.fillStyle = '#5f6b64';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.label, pad.l - 10, y + barH / 2);
+
+    ctx.fillStyle = '#e8f3ed';
+    ctx.fillRect(pad.l, y, barMaxW, barH);
+
+    ctx.fillStyle = barColor;
+    ctx.fillRect(pad.l, y, barW, barH);
+
+    ctx.fillStyle = '#1a1f1c';
+    ctx.textAlign = 'left';
+    ctx.fillText(item.pct.toFixed(1) + '%', pad.l + barW + 8, y + barH / 2);
+  });
+
+  return true;
+}
+
+function renderAudienceCharts(campaign) {
+  const ageData = parseDistribution(campaign['Age distribution'], 'age');
+  const genderData = parseDistribution(campaign['Gender distribution'], 'gender');
+
+  const redraw = () => {
+    drawHorizontalBarChart('ageChart', 'ageChartNote', ageData);
+    drawHorizontalBarChart('genderChart', 'genderChartNote', genderData, { barColor: '#2563eb' });
+  };
+
+  redraw();
+  window.addEventListener('resize', redraw);
 }
 
 function drawChart(history) {
@@ -117,6 +296,7 @@ function drawChart(history) {
 }
 
 export async function initDashboard() {
+  initProductTabs();
   renderDeliverables();
 
   try {
@@ -133,6 +313,7 @@ export async function initDashboard() {
     const organic = c['Organic views'];
     const creators = data.creators || [];
     const history = data.history || [];
+    const topVideos = data.top_videos || [];
 
     document.getElementById('subtitle').textContent =
       `${m.brand || 'Campaign'} · ${m.n_creators ?? creators.length} creators · ${m.n_videos ?? '—'} videos · ${m.period || '—'} · Source: ${m.source || '—'}`;
@@ -143,6 +324,9 @@ export async function initDashboard() {
       <div class="card"><div class="metric">${(c['Engagement rate'] * 100).toFixed(2)}%</div><div class="metric-label">Engagement Rate</div></div>
       <div class="card"><div class="metric">$${c['CPM'].toFixed(2)}</div><div class="metric-label">CPM</div></div>
     `;
+
+    renderVideoSpotlight(topVideos);
+    renderAudienceCharts(c);
 
     const paidPct = pct(paid, views);
     document.getElementById('splitBar').innerHTML =
