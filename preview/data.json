@@ -347,6 +347,30 @@
   ],
   "history": [
     {
+      "Date": "2026-06-02T00:00:00",
+      "Total views": 0.0,
+      "Paid views": 0.0,
+      "Organic views": 0.0
+    },
+    {
+      "Date": "2026-06-03T00:00:00",
+      "Total views": 0.0,
+      "Paid views": 0.0,
+      "Organic views": 0.0
+    },
+    {
+      "Date": "2026-06-04T00:00:00",
+      "Total views": 0.0,
+      "Paid views": 0.0,
+      "Organic views": 0.0
+    },
+    {
+      "Date": "2026-06-05T00:00:00",
+      "Total views": 0.0,
+      "Paid views": 0.0,
+      "Organic views": 0.0
+    },
+    {
       "Date": "2026-06-06T00:00:00",
       "Total views": 1574.0,
       "Paid views": 0.0,
@@ -507,6 +531,12 @@
       "Total views": 19149.0,
       "Paid views": 0.0,
       "Organic views": 19149.0
+    },
+    {
+      "Date": "2026-07-03T00:00:00",
+      "Total views": null,
+      "Paid views": null,
+      "Organic views": null
     }
   ],
   "meta": {
