@@ -244,6 +244,18 @@
       padding-top: 16px;
       border-top: 1px solid var(--border);
     }
+
+    .error-banner {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .error-banner[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -256,6 +268,8 @@
       </div>
       <button type="button" class="logout-btn" id="logout-btn">Keluar</button>
     </header>
+
+    <div id="error-banner" class="error-banner" role="alert" hidden></div>
 
     <section class="section grid grid-4" id="kpis"></section>
 
@@ -295,7 +309,7 @@
               <th>Creator</th>
               <th>Videos</th>
               <th>Views</th>
-              <th>Share</th>
+              <th>Share (campaign)</th>
             </tr>
           </thead>
           <tbody id="creatorTable"></tbody>
@@ -312,150 +326,21 @@
       <p style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">
         PowerPoint decks generated from TikTok One export data.
       </p>
-      <div class="downloads">
-        <a class="btn btn-primary" href="/output/FOLO - Report TTO Betadine Wound (Jun 2026).pptx" download>
-          Download Wound Deck (16 slides)
-        </a>
-        <a class="btn" href="/output/FOLO - Report TTO Betadine Antiseptic Solution (Jun 2026).pptx" download>
-          Download Solution Deck (7 slides)
-        </a>
-        <a class="btn" href="/exports/TIKTOK ONE REPORT - Betadine Antiseptic Solution (OLV - Online Video).xlsx" download>
-          Download Source Excel
-        </a>
-      </div>
+      <div class="downloads" id="downloads"></div>
     </section>
 
     <p class="footnote" id="footnote"></p>
   </div>
 
   <script type="module">
-    import { LOGIN_PATH, logout, requireAuth } from '/preview/js/auth.js?v=3';
+    import { LOGIN_PATH, logout, requireAuth } from '/preview/js/auth.js?v=4';
+    import { initDashboard } from '/preview/js/dashboard.js?v=4';
 
     const session = requireAuth(LOGIN_PATH);
     if (!session) throw new Error('unauthorized');
 
     document.getElementById('logout-btn').addEventListener('click', () => logout(LOGIN_PATH));
-  </script>
-  <script>
-    function fmt(n) {
-      if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M';
-      if (n >= 1_000) return (n / 1_000).toFixed(1).replace('.0', '') + 'K';
-      return Number(n).toLocaleString('id-ID');
-    }
-
-    function pct(part, total) {
-      return total ? Math.round(part / total * 100) : 0;
-    }
-
-    function drawChart(history) {
-      const canvas = document.getElementById('trendChart');
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-
-      const w = rect.width;
-      const h = rect.height;
-      const pad = { t: 12, r: 12, b: 28, l: 44 };
-      const max = Math.max(...history.map(d => d['Total views']));
-      const points = history.map((d, i) => ({
-        x: pad.l + (i / Math.max(history.length - 1, 1)) * (w - pad.l - pad.r),
-        y: pad.t + (1 - d['Total views'] / max) * (h - pad.t - pad.b),
-        v: d['Total views'],
-        date: d.Date.slice(5)
-      }));
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.strokeStyle = '#dde5df';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= 4; i++) {
-        const y = pad.t + (i / 4) * (h - pad.t - pad.b);
-        ctx.beginPath();
-        ctx.moveTo(pad.l, y);
-        ctx.lineTo(w - pad.r, y);
-        ctx.stroke();
-        ctx.fillStyle = '#5f6b64';
-        ctx.font = '11px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(fmt(max * (1 - i / 4)), pad.l - 8, y + 4);
-      }
-
-      ctx.beginPath();
-      ctx.strokeStyle = '#158158';
-      ctx.lineWidth = 2;
-      points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-      ctx.stroke();
-
-      ctx.fillStyle = '#158158';
-      points.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      ctx.fillStyle = '#5f6b64';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      [0, Math.floor(points.length / 2), points.length - 1].forEach(i => {
-        if (points[i]) ctx.fillText(points[i].date, points[i].x, h - 8);
-      });
-    }
-
-    async function init() {
-      const res = await fetch('/data.json');
-      const data = await res.json();
-      const c = data.campaign;
-      const m = data.meta;
-      const views = c['Total views'];
-      const paid = c['Paid views'];
-      const organic = c['Organic views'];
-
-      document.getElementById('subtitle').textContent =
-        `${m.brand} · ${m.n_creators} creators · ${m.n_videos} videos · ${m.period} · Source: ${m.source}`;
-
-      document.getElementById('kpis').innerHTML = `
-        <div class="card"><div class="metric">${fmt(views)}</div><div class="metric-label">Total Views</div></div>
-        <div class="card"><div class="metric">${fmt(c['Unique viewers'])}</div><div class="metric-label">Unique Viewers</div></div>
-        <div class="card"><div class="metric">${(c['Engagement rate'] * 100).toFixed(2)}%</div><div class="metric-label">Engagement Rate</div></div>
-        <div class="card"><div class="metric">$${c['CPM'].toFixed(2)}</div><div class="metric-label">CPM</div></div>
-      `;
-
-      const paidPct = pct(paid, views);
-      document.getElementById('splitBar').innerHTML =
-        `<div class="split-paid" style="width:${paidPct}%"></div><div class="split-organic" style="width:${100-paidPct}%"></div>`;
-      document.getElementById('paidLegend').textContent = `Paid ${fmt(paid)} (${paidPct}%)`;
-      document.getElementById('organicLegend').textContent = `Organic ${fmt(organic)} (${100 - paidPct}%)`;
-      document.getElementById('engRate').textContent = (c['Engagement rate'] * 100).toFixed(2) + '%';
-      document.getElementById('cpm').textContent = '$' + c['CPM'].toFixed(2);
-
-      const totalCreatorViews = data.creators.reduce((s, x) => s + x.total_views, 0);
-      document.getElementById('creatorTable').innerHTML = data.creators.map(cr => `
-        <tr>
-          <td class="creator-name">@${cr['Creator name']}</td>
-          <td>${cr.videos}</td>
-          <td>${fmt(cr.total_views)}</td>
-          <td>${pct(cr.total_views, totalCreatorViews)}%</td>
-        </tr>
-      `).join('');
-
-      const top = data.creators[0];
-      document.getElementById('insights').innerHTML = `
-        <div class="insight"><strong>Paid amplification drives scale</strong>${paidPct}% views dari paid media dengan CPM $${c['CPM'].toFixed(2)} — efisiensi biaya tinggi.</div>
-        <div class="insight"><strong>Creator concentration</strong>@${top['Creator name']} kontribusi ${pct(top.total_views, totalCreatorViews)}% total views — diversifikasi perlu dipertimbangkan.</div>
-        <div class="insight warn"><strong>Organic engagement lemah</strong>Organic ER ${(c['Organic engagement rate'] * 100).toFixed(2)}% vs paid ${(c['Paid engagement rate'] * 100).toFixed(2)}% — ruang growth organik masih besar.</div>
-        <div class="insight warn"><strong>Retention drop setelah hook</strong>${(c['2-Second video views'] * 100).toFixed(0)}% pass 2-detik → ${(c['6-Second video views'] * 100).toFixed(0)}% di 6-detik — storytelling perlu diperkuat.</div>
-      `;
-
-      drawChart(data.history);
-      window.addEventListener('resize', () => drawChart(data.history));
-
-      document.getElementById('footnote').textContent =
-        `Data dari TikTok One export · Updated ${c['Report updated date']} · Campaign ID ${c['Campaign or link ID']}`;
-    }
-
-    init();
+    initDashboard();
   </script>
 </body>
 </html>

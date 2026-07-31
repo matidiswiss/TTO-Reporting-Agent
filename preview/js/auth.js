@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-config.js';
 
 const SESSION_KEY = 'tto_session';
-export const APP_VERSION = '3';
+export const APP_VERSION = '4';
 export const LOGIN_PATH = '/login';
 export const DASHBOARD_PATH = '/dashboard';
 

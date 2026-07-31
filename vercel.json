@@ -6,6 +6,7 @@
     { "source": "/dashboard", "destination": "/preview/index.html" },
     { "source": "/index.html", "destination": "/preview/index.html" },
     { "source": "/data.json", "destination": "/preview/data.json" },
+    { "source": "/exports/(.*)", "destination": "/exports/$1" },
     { "source": "/js/(.*)", "destination": "/preview/js/$1" }
   ],
   "headers": [
